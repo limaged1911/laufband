@@ -6,6 +6,8 @@ jeden Lauf speichert und als **FIT-Datei** für Garmin Connect exportiert.
 Entwickelt für das **Kettler Track S10** (Bluetooth, Kinomap-kompatibel), funktioniert mit jedem Laufband,
 das den Bluetooth-Standard **FTMS** (Fitness Machine Service) spricht.
 
+<img src="qr-code.png" width="160" alt="QR-Code zur App" align="right">
+
 ## Funktionen
 
 - Große Anzeige: **Pace** (min/km), **Distanz**, **Puls**, **Zeit**, Ø Pace, Tempo, Steigung
@@ -21,7 +23,7 @@ das den Bluetooth-Standard **FTMS** (Fitness Machine Service) spricht.
 
 ## Benutzung
 
-1. Die App in **Chrome auf Android** öffnen (Adresse siehe GitHub Pages des Repos).
+1. Die App in **Chrome auf Android** öffnen: **https://limaged1911.github.io/laufband/** (oder QR-Code scannen).
    Über das Chrome-Menü → **„Zum Startbildschirm hinzufügen“** wird sie wie eine App installiert.
 2. Laufband einschalten. Kinomap oder andere Apps dürfen **nicht** gleichzeitig verbunden sein.
 3. Oben auf **„+ Laufband“** tippen und das Gerät wählen, ggf. **„+ Puls“** für den Brustgurt.
