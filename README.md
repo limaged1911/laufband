@@ -26,7 +26,7 @@ das den Bluetooth-Standard **FTMS** (Fitness Machine Service) spricht.
 1. Die App in **Chrome auf Android** öffnen: **https://limaged1911.github.io/laufband/** (oder QR-Code scannen).
    Über das Chrome-Menü → **„Zum Startbildschirm hinzufügen“** wird sie wie eine App installiert.
 2. Laufband einschalten. Kinomap oder andere Apps dürfen **nicht** gleichzeitig verbunden sein.
-3. Oben auf **„+ Laufband“** tippen und das Gerät wählen, ggf. **„+ Puls“** für den Brustgurt.
+3. **„Laufband verbinden“** tippen und das Gerät wählen, ggf. **„Pulsgurt verbinden“** (oder oben „+ Laufband“ / „+ Puls“).
 4. **Start** drücken und loslaufen. **Beenden** speichert den Lauf.
 5. Unter **Läufe** → **FIT-Datei**. Die Datei landet in „Downloads“.
 6. Auf [connect.garmin.com/modern/import-data](https://connect.garmin.com/modern/import-data) hochladen

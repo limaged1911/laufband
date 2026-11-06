@@ -2,7 +2,7 @@ import { Link, FTMS, TREADMILL_DATA, HRS, HR_MEASUREMENT, parseTreadmillData, pa
 import { buildFit, fitFileName } from './fit.js';
 import { saveRun, deleteRun, getRun, listRuns, persist } from './store.js';
 
-const VERSION = '1.0.0';
+const VERSION = '1.0.1';
 const $ = (id) => document.getElementById(id);
 
 // ---------- Einstellungen ----------
@@ -63,8 +63,17 @@ function log(line) {
   el.textContent += line + '\n';
   el.scrollTop = el.scrollHeight;
 }
+// Große Verbinden-Knöpfe nur zeigen, solange das jeweilige Gerät getrennt ist
+function renderConnect() {
+  const tmOff = $('chipTm').dataset.state === 'getrennt';
+  const hrOff = $('chipHr').dataset.state === 'getrennt';
+  $('btnConnectTm').hidden = !tmOff;
+  $('btnConnectHr').hidden = !hrOff;
+  $('connectBox').hidden = !tmOff && !hrOff;
+}
 function setChip(el, state, name, fallback) {
   el.dataset.state = state;
+  queueMicrotask(renderConnect);
   el.querySelector('.lbl').textContent = state === 'getrennt' ? `+ ${fallback}`
     : `${name || fallback}${state === 'verbinde' ? ' …' : ''}`;
   el.title = state === 'getrennt' ? `${fallback} verbinden` : `${name || fallback} – tippen zum Trennen`;
@@ -124,6 +133,8 @@ $('chipTm').onclick = () => connect(treadmill, {
   optionalServices: [FTMS, 'device_information'],
 }, 'Laufband');
 $('chipHr').onclick = () => connect(strap, { filters: [{ services: [HRS] }] }, 'Pulsgurt');
+$('btnConnectTm').onclick = () => $('chipTm').click();
+$('btnConnectHr').onclick = () => $('chipHr').click();
 
 // ---------- Lauf ----------
 const isActive = () => run && run.state !== 'done';
