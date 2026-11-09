@@ -120,7 +120,7 @@ pre#log:empty { display: none; }
 dialog { background: var(--surface); color: var(--text); border: 1px solid var(--line); border-radius: 16px;
   padding: 18px; width: min(92vw, 380px); }
 dialog::backdrop { background: rgba(0, 0, 0, .6); }
-dialog p { margin: 0 0 14px; font-size: 16px; }
+dialog p { margin: 0 0 14px; font-size: 16px; white-space: pre-line; overflow-wrap: anywhere; }
 
 #toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom)); transform: translateX(-50%);
   background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; padding: 10px 16px;

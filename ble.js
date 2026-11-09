@@ -83,7 +83,18 @@ export class Link {
   async _connect() {
     this.onStatus('verbinde', this.device.name);
     const server = await this.device.gatt.connect();
-    const svc = await server.getPrimaryService(this.service);
+    let svc;
+    try {
+      svc = await server.getPrimaryService(this.service);
+    } catch {
+      // Dienst fehlt: verfügbare Dienste für die Fehlermeldung sammeln
+      let found = [];
+      try { found = (await server.getPrimaryServices()).map((s) => s.uuid); } catch { /* egal */ }
+      const err = new Error(`„${this.device.name || 'Gerät'}“ bietet den benötigten Dienst nicht an.`
+        + (found.length ? ` Gefundene Dienste: ${found.join(', ')}` : ' Keine bekannten Dienste gefunden.'));
+      err.name = 'ServiceMissing';
+      throw err;
+    }
     this.char = await svc.getCharacteristic(this.characteristic);
     this.char.addEventListener('characteristicvaluechanged', (e) => {
       try { this.onData(this.parse(e.target.value)); } catch (err) { console.warn(err); }

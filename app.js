@@ -1,8 +1,8 @@
-import { Link, FTMS, TREADMILL_DATA, HRS, HR_MEASUREMENT, parseTreadmillData, parseHeartRate, inspectDevice } from './ble.js';
+import { Link, FTMS, TREADMILL_DATA, HRS, HR_MEASUREMENT, parseTreadmillData, parseHeartRate, inspectDevice, DIAG_SERVICES } from './ble.js';
 import { buildFit, fitFileName } from './fit.js';
 import { saveRun, deleteRun, getRun, listRuns, persist } from './store.js';
 
-const VERSION = '1.0.1';
+const VERSION = '1.0.2';
 const $ = (id) => document.getElementById(id);
 
 // ---------- Einstellungen ----------
@@ -122,15 +122,33 @@ async function connect(link, options, name) {
     if (await ask(`${name} trennen?`, 'Trennen')) link.disconnect();
     return;
   }
+  try {
+    if (navigator.bluetooth.getAvailability && !(await navigator.bluetooth.getAvailability())) {
+      await ask('Bluetooth ist am Handy ausgeschaltet oder für Chrome nicht erlaubt. Bitte Bluetooth einschalten '
+        + 'und Chrome die Berechtigung „Geräte in der Nähe“ geben.');
+      return;
+    }
+  } catch { /* weiter versuchen */ }
   try { await link.pick(options); } catch (e) {
-    if (e.name !== 'NotFoundError') { toast(`${name}: ${e.message}`, 5000); log(`${name}: ${e.message}`); }
     link.disconnect();
+    log(`${name}: ${e.name}: ${e.message}`);
+    if (e.name === 'NotFoundError') {
+      // Auswahl abgebrochen oder Liste leer
+      toast(`Kein Gerät gewählt. ${name} nicht in der Liste? Bluetooth und Standort am Handy einschalten, `
+        + 'andere Apps (Kinomap) schließen, Laufband einschalten.', 7000);
+    } else if (e.name === 'ServiceMissing') {
+      await ask(`${e.message}\n\nBitte unter Einstellungen → Diagnose „Gerät untersuchen“ ausführen und das Log schicken.`);
+    } else {
+      await ask(`${name} konnte nicht verbunden werden: ${e.message}\n\nTipp: Laufband aus- und wieder einschalten, `
+        + 'Kinomap schließen und es erneut versuchen.');
+    }
   }
 }
 
+// Laufband: alle Geräte anzeigen, weil nicht jedes Laufband seinen Dienst in der Werbung ankündigt
 $('chipTm').onclick = () => connect(treadmill, {
-  filters: [{ services: [FTMS] }, { namePrefix: 'KETTLER' }, { namePrefix: 'Kettler' }],
-  optionalServices: [FTMS, 'device_information'],
+  acceptAllDevices: true,
+  optionalServices: DIAG_SERVICES,
 }, 'Laufband');
 $('chipHr').onclick = () => connect(strap, { filters: [{ services: [HRS] }] }, 'Pulsgurt');
 $('btnConnectTm').onclick = () => $('chipTm').click();
