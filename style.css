@@ -75,6 +75,11 @@ main { flex: 1; padding: 0 14px 14px; }
 .split b { display: block; color: var(--text); font-family: var(--num); font-size: 15px; }
 
 .connect { display: flex; gap: 10px; }
+.connmsg { font-size: 13px; color: var(--muted); text-align: center; overflow-wrap: anywhere; }
+.connmsg:empty { display: none; }
+.connmsg.err { color: var(--bad); }
+.ver { font-size: 11px; color: var(--muted); text-align: center; }
+@media (orientation: landscape) and (max-height: 560px) { #tab-run .connmsg, #tab-run .ver { grid-column: 1 / -1; } }
 .connect .btn { flex: 1; }
 .connect .btn[hidden], .connect[hidden] { display: none; }
 @media (orientation: landscape) and (max-height: 560px) { #tab-run .connect { grid-column: 1 / -1; } }

@@ -2,7 +2,7 @@ import { Link, FTMS, TREADMILL_DATA, HRS, HR_MEASUREMENT, parseTreadmillData, pa
 import { buildFit, fitFileName } from './fit.js';
 import { saveRun, deleteRun, getRun, listRuns, persist } from './store.js';
 
-const VERSION = '1.0.2';
+const VERSION = '1.0.3';
 const $ = (id) => document.getElementById(id);
 
 // ---------- Einstellungen ----------
@@ -85,7 +85,9 @@ const treadmill = new Link({
   onData: onTreadmill,
   onStatus: (st, name) => {
     setChip($('chipTm'), st, name, 'Laufband');
-    if (st === 'verbunden') toast(`Laufband verbunden: ${name || ''}`);
+    log(`Laufband: ${st}${name ? ` (${name})` : ''}`);
+    if (st === 'verbinde') connMsg(`Verbinde mit ${name || 'Laufband'} …`);
+    if (st === 'verbunden') { connMsg(''); toast(`Laufband verbunden: ${name || ''}`); }
     if (st !== 'verbunden') live.speed = null;
   },
 });
@@ -113,33 +115,49 @@ function onTreadmill(d) {
   }
 }
 
+function connMsg(text, isError = false) {
+  const el = $('connMsg');
+  el.textContent = text;
+  el.classList.toggle('err', isError);
+}
+
 async function connect(link, options, name) {
   if (!navigator.bluetooth) {
-    await ask('Dieser Browser unterstützt kein Web Bluetooth. Bitte die App in Chrome auf Android öffnen.');
+    connMsg('Web Bluetooth ist in diesem Browser nicht verfügbar.', true);
+    await ask('Dieser Browser unterstützt kein Web Bluetooth. Bitte die App in Chrome auf Android öffnen '
+      + '(nicht im Samsung Internet oder Firefox).');
     return;
   }
   if (link.connected || link.wanted) {
     if (await ask(`${name} trennen?`, 'Trennen')) link.disconnect();
     return;
   }
+  // requestDevice muss direkt aus dem Tippen heraus starten – daher vorher nichts abwarten
+  connMsg(`${name}: Geräteauswahl wird geöffnet …`);
+  log(`${name}: Geräteauswahl öffnen`);
   try {
-    if (navigator.bluetooth.getAvailability && !(await navigator.bluetooth.getAvailability())) {
-      await ask('Bluetooth ist am Handy ausgeschaltet oder für Chrome nicht erlaubt. Bitte Bluetooth einschalten '
-        + 'und Chrome die Berechtigung „Geräte in der Nähe“ geben.');
-      return;
-    }
-  } catch { /* weiter versuchen */ }
-  try { await link.pick(options); } catch (e) {
+    await link.pick(options);
+    connMsg('');
+  } catch (e) {
     link.disconnect();
     log(`${name}: ${e.name}: ${e.message}`);
-    if (e.name === 'NotFoundError') {
-      // Auswahl abgebrochen oder Liste leer
-      toast(`Kein Gerät gewählt. ${name} nicht in der Liste? Bluetooth und Standort am Handy einschalten, `
-        + 'andere Apps (Kinomap) schließen, Laufband einschalten.', 7000);
+    let avail = null;
+    try { avail = await navigator.bluetooth.getAvailability?.(); } catch { /* egal */ }
+    if (avail === false) {
+      connMsg(`Bluetooth nicht verfügbar (${e.message})`, true);
+      await ask('Bluetooth ist am Handy ausgeschaltet oder für Chrome nicht erlaubt.\n\nBitte Bluetooth und Standort '
+        + 'einschalten und Chrome die Berechtigungen „Geräte in der Nähe“ und „Standort“ geben.');
+    } else if (e.name === 'NotFoundError') {
+      // Auswahl abgebrochen, Liste leer oder Bluetooth/Standort aus
+      connMsg(`Kein Gerät verbunden – Meldung: „${e.message}“`, true);
+      await ask(`Kein Gerät verbunden.\nMeldung von Chrome: „${e.message}“\n\nPrüfen: Bluetooth und Standort am Handy an, `
+        + 'Chrome hat „Geräte in der Nähe“ und „Standort“ erlaubt, Kinomap geschlossen, Laufband eingeschaltet.');
     } else if (e.name === 'ServiceMissing') {
+      connMsg(e.message, true);
       await ask(`${e.message}\n\nBitte unter Einstellungen → Diagnose „Gerät untersuchen“ ausführen und das Log schicken.`);
     } else {
-      await ask(`${name} konnte nicht verbunden werden: ${e.message}\n\nTipp: Laufband aus- und wieder einschalten, `
+      connMsg(`${name}: ${e.name}: ${e.message}`, true);
+      await ask(`${name} konnte nicht verbunden werden: ${e.name}: ${e.message}\n\nTipp: Laufband aus- und wieder einschalten, `
         + 'Kinomap schließen und es erneut versuchen.');
     }
   }
@@ -443,6 +461,7 @@ $('btnDemo').onclick = () => {
   showTab('run');
 };
 $('version').textContent = `Version ${VERSION}`;
+$('verRun').textContent = `Version ${VERSION}`;
 
 // ---------- Start ----------
 (async () => {
