@@ -1,7 +1,7 @@
 // Offline-Cache: zuerst Netz, bei Ausfall aus dem Cache
-const CACHE = 'laufband-v4';
+const CACHE = 'laufband-v5';
 const FILES = ['./', 'index.html', 'style.css', 'app.js', 'ble.js', 'fit.js', 'store.js',
-  'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png'];
+  'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'fonts/roboto-black-italic-latin.woff2'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)).then(() => self.skipWaiting()));

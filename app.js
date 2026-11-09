@@ -2,7 +2,7 @@ import { Link, FTMS, TREADMILL_DATA, HRS, HR_MEASUREMENT, parseTreadmillData, pa
 import { buildFit, fitFileName } from './fit.js';
 import { saveRun, deleteRun, getRun, listRuns, persist } from './store.js';
 
-const VERSION = '1.0.3';
+const VERSION = '1.0.4';
 const $ = (id) => document.getElementById(id);
 
 // ---------- Einstellungen ----------

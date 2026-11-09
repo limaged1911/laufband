@@ -1,3 +1,11 @@
+/* Roboto Black Italic (lokal, Apache-2.0) für die Messwerte */
+@font-face {
+  font-family: 'Roboto Black Italic';
+  font-style: italic;
+  font-weight: 900;
+  font-display: swap;
+  src: url(fonts/roboto-black-italic-latin.woff2) format('woff2');
+}
 :root {
   --bg: #0e1116;
   --surface: #171b22;
@@ -11,6 +19,7 @@
   --bad: #ff5468;
   --hr: #ff5468;
   --num: 'Roboto Mono', ui-monospace, 'SF Mono', Consolas, monospace;
+  --metric: 'Roboto Black Italic', Roboto, system-ui, sans-serif;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -56,9 +65,9 @@ main { flex: 1; padding: 0 14px 14px; }
 
 .tile { background: var(--surface); border-radius: 16px; padding: 12px 14px; }
 .tile .k { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
-.tile .v { font-family: var(--num); font-weight: 700; font-size: clamp(30px, 10vw, 54px); line-height: 1.1;
-  font-variant-numeric: tabular-nums; white-space: nowrap; }
-.tile .v small { font-family: system-ui, sans-serif; font-size: 13px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+.tile .v { font-family: var(--metric); font-style: italic; font-weight: 900; font-size: clamp(32px, 11vw, 58px);
+  line-height: 1.1; font-variant-numeric: tabular-nums; white-space: nowrap; padding-right: .08em; }
+.tile .v small { font-family: system-ui, sans-serif; font-style: normal; font-size: 13px; color: var(--muted); font-weight: 500; margin-left: 6px; }
 .hero { text-align: center; padding: 14px; }
 .hero .v { font-size: clamp(64px, 24vw, 132px); color: var(--accent); }
 .hero .v small { display: block; margin: 0; }

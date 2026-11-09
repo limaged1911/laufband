@@ -46,6 +46,7 @@ dann bitte das Log kopieren und weitergeben, damit die Anbindung ergänzt werden
   offiziellen Garmin FIT SDK
 - `store.js` – Speicherung in IndexedDB (nur lokal auf dem Gerät)
 - `sw.js` – Service Worker für Offline-Betrieb
+- `fonts/` – Roboto Black Italic (Google Fonts, Apache-2.0) für Pace, Distanz, Zeit und Puls, lokal eingebunden
 - Web Bluetooth braucht HTTPS, daher Auslieferung über GitHub Pages
 
 Lokal testen: einen beliebigen statischen Webserver im Ordner starten und `http://localhost:<port>` öffnen
