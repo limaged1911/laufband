@@ -3,8 +3,10 @@
 Web-App (PWA) für Android, die Pace, Distanz, Puls und Steigung von einem Bluetooth-Laufband anzeigt,
 jeden Lauf speichert und als **FIT-Datei** für Garmin Connect exportiert.
 
-Entwickelt für das **Kettler Track S10** (Bluetooth, Kinomap-kompatibel), funktioniert mit jedem Laufband,
-das den Bluetooth-Standard **FTMS** (Fitness Machine Service) spricht.
+Entwickelt für das **Kettler Track S10** (Bluetooth, Kinomap-kompatibel). Unterstützt zwei Bluetooth-Standards:
+**FTMS** (Fitness Machine Service, mit Steigung) und **RSC** (Running Speed and Cadence, wie ein Laufsensor).
+Das Track S10 meldet sich als „S10“ mit RSC (0x1814), Herzfrequenz (0x180D) und Geräteinfo (0x180A) – ohne FTMS.
+Die Steigung wird über RSC nicht übertragen, der Handpuls des Laufbands wird mitgelesen.
 
 <img src="qr-code.png" width="160" alt="QR-Code zur App" align="right">
 
@@ -41,7 +43,8 @@ dann bitte das Log kopieren und weitergeben, damit die Anbindung ergänzt werden
 ## Technik
 
 - Reines HTML/CSS/JavaScript ohne Build-Schritt und ohne Abhängigkeiten
-- `ble.js` – Web Bluetooth: FTMS Treadmill Data (0x2ACD), Heart Rate Measurement (0x2A37), Auto-Reconnect
+- `ble.js` – Web Bluetooth: FTMS Treadmill Data (0x2ACD), sonst RSC Measurement (0x2A53),
+  Heart Rate Measurement (0x2A37, Pulsgurt oder Handpuls des Laufbands), Auto-Reconnect
 - `fit.js` – FIT-Encoder (file_id, event, record, lap, session, activity) mit CRC; geprüft mit dem
   offiziellen Garmin FIT SDK
 - `store.js` – Speicherung in IndexedDB (nur lokal auf dem Gerät)
