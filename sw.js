@@ -1,5 +1,5 @@
 // Offline-Cache: zuerst Netz, bei Ausfall aus dem Cache
-const CACHE = 'laufband-v5';
+const CACHE = 'laufband-v6';
 const FILES = ['./', 'index.html', 'style.css', 'app.js', 'ble.js', 'fit.js', 'store.js',
   'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'fonts/roboto-black-italic-latin.woff2'];
 

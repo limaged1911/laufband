@@ -1,8 +1,9 @@
-import { Link, FTMS, TREADMILL_DATA, HRS, HR_MEASUREMENT, parseTreadmillData, parseHeartRate, inspectDevice, DIAG_SERVICES } from './ble.js';
+import { Link, FTMS, TREADMILL_DATA, RSC, RSC_MEASUREMENT, HRS, HR_MEASUREMENT, parseTreadmillData, parseRsc, parseHeartRate,
+  inspectDevice, DIAG_SERVICES } from './ble.js';
 import { buildFit, fitFileName } from './fit.js';
 import { saveRun, deleteRun, getRun, listRuns, persist } from './store.js';
 
-const VERSION = '1.0.4';
+const VERSION = '1.1.0';
 const $ = (id) => document.getElementById(id);
 
 // ---------- Einstellungen ----------
@@ -81,11 +82,16 @@ function setChip(el, state, name, fallback) {
 
 // ---------- Bluetooth ----------
 const treadmill = new Link({
-  label: 'Laufband', service: FTMS, characteristic: TREADMILL_DATA, parse: parseTreadmillData,
+  label: 'Laufband',
+  profiles: [
+    { name: 'FTMS', service: FTMS, characteristic: TREADMILL_DATA, parse: parseTreadmillData },
+    { name: 'RSC', service: RSC, characteristic: RSC_MEASUREMENT, parse: parseRsc }, // z. B. Kettler Track S10
+  ],
+  extras: [{ service: HRS, characteristic: HR_MEASUREMENT, parse: parseHeartRate }], // Handpuls des Laufbands
   onData: onTreadmill,
   onStatus: (st, name) => {
     setChip($('chipTm'), st, name, 'Laufband');
-    log(`Laufband: ${st}${name ? ` (${name})` : ''}`);
+    log(`Laufband: ${st}${name ? ` (${name})` : ''}${st === 'verbunden' ? ` · Protokoll ${treadmill.profile?.name}` : ''}`);
     if (st === 'verbinde') connMsg(`Verbinde mit ${name || 'Laufband'} …`);
     if (st === 'verbunden') { connMsg(''); toast(`Laufband verbunden: ${name || ''}`); }
     if (st !== 'verbunden') live.speed = null;

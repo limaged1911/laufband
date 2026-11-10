@@ -51,6 +51,25 @@ export function parseTreadmillData(dv) {
   return r;
 }
 
+export const RSC = 'running_speed_and_cadence';        // 0x1814
+export const RSC_MEASUREMENT = 'rsc_measurement';       // 0x2A53
+
+/**
+ * RSC Measurement (0x2A53) auswerten – so sendet z. B. das Kettler Track S10.
+ * Geschwindigkeit in 1/256 m/s, Gesamtdistanz (optional) in 1/10 m.
+ */
+export function parseRsc(dv) {
+  const r = { raw: hex(dv) };
+  if (dv.byteLength < 4) return r;
+  const flags = dv.getUint8(0);
+  let o = 1;
+  r.speed = Math.round((dv.getUint16(o, true) / 256) * 3.6 * 100) / 100; o += 2; // km/h
+  r.cadence = dv.getUint8(o); o += 1;
+  if (flags & 0x01) o += 2; // Schrittlänge
+  if ((flags & 0x02) && o + 4 <= dv.byteLength) r.distance = dv.getUint32(o, true) / 10; // m
+  return r;
+}
+
 /** Heart Rate Measurement (0x2A37) auswerten */
 export function parseHeartRate(dv) {
   const flags = dv.getUint8(0);
@@ -63,8 +82,14 @@ export function parseHeartRate(dv) {
  * Verbindet nach einem Abbruch automatisch neu.
  */
 export class Link {
-  constructor({ label, service, characteristic, parse, onData, onStatus }) {
-    Object.assign(this, { label, service, characteristic, parse, onData, onStatus });
+  /**
+   * profiles: Liste möglicher Protokolle [{service, characteristic, parse, name}] – das erste vorhandene wird genutzt.
+   * extras: zusätzliche Datenquellen desselben Geräts, die mitgelesen werden, falls vorhanden (z. B. Handpuls).
+   */
+  constructor({ label, service, characteristic, parse, profiles, extras = [], onData, onStatus }) {
+    Object.assign(this, { label, onData, onStatus, extras });
+    this.profiles = profiles || [{ service, characteristic, parse }];
+    this.profile = null;
     this.device = null;
     this.char = null;
     this.wanted = false;
@@ -83,10 +108,11 @@ export class Link {
   async _connect() {
     this.onStatus('verbinde', this.device.name);
     const server = await this.device.gatt.connect();
-    let svc;
-    try {
-      svc = await server.getPrimaryService(this.service);
-    } catch {
+    let svc = null;
+    for (const p of this.profiles) {
+      try { svc = await server.getPrimaryService(p.service); this.profile = p; break; } catch { /* nächstes Protokoll */ }
+    }
+    if (!svc) {
       // Dienst fehlt: verfügbare Dienste für die Fehlermeldung sammeln
       let found = [];
       try { found = (await server.getPrimaryServices()).map((s) => s.uuid); } catch { /* egal */ }
@@ -95,11 +121,22 @@ export class Link {
       err.name = 'ServiceMissing';
       throw err;
     }
-    this.char = await svc.getCharacteristic(this.characteristic);
+    const p = this.profile;
+    this.char = await svc.getCharacteristic(p.characteristic);
     this.char.addEventListener('characteristicvaluechanged', (e) => {
-      try { this.onData(this.parse(e.target.value)); } catch (err) { console.warn(err); }
+      try { this.onData(p.parse(e.target.value)); } catch (err) { console.warn(err); }
     });
     await this.char.startNotifications();
+    for (const x of this.extras) {
+      if (x.service === p.service) continue;
+      try {
+        const c = await (await server.getPrimaryService(x.service)).getCharacteristic(x.characteristic);
+        c.addEventListener('characteristicvaluechanged', (e) => {
+          try { this.onData(x.parse(e.target.value)); } catch (err) { console.warn(err); }
+        });
+        await c.startNotifications();
+      } catch { /* Zusatzquelle fehlt – egal */ }
+    }
     this.retry = 0;
     this.onStatus('verbunden', this.device.name);
   }
